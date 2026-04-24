@@ -1,8 +1,9 @@
 %global debug_package %{nil}
+%global __python %{__python3}
 
 Name:           powerline
-Version:        2.7
-Release:        7%{?dist}
+Version:        2.8.4
+Release:        1%{?dist}
 
 Summary:        The ultimate status-line/prompt utility
 License:        MIT
@@ -14,16 +15,18 @@ BuildRequires:  python%{python3_pkgversion}-sphinx
 BuildRequires:  python%{python3_pkgversion}-devel
 BuildRequires:  fdupes
 BuildRequires:  fontconfig
+%if 0%{?rhel} >= 8 || 0%{?fedora}
+BuildRequires:  systemd-rpm-macros
+%else
 BuildRequires:  systemd
+%endif
 BuildRequires:  tmux
 BuildRequires:  vim-minimal
 
-Requires:       python
+Requires:       python3
 Requires:       powerline-fonts
 Requires:       which socat
-Requires(post): systemd
-Requires(preun): systemd
-Requires(postun): systemd
+%{?systemd_requires}
 
 #Recommends:     python-pygit2
 
@@ -55,7 +58,7 @@ This package provides the powerline fonts.
 Summary: Powerline VIM plugin
 Requires: vim
 Requires: %{name} = %{version}-%{release}
-Obsoletes: vim-plugin-powerline
+Obsoletes: vim-plugin-powerline < %{version}-%{release}
 Provides: vim-plugin-powerline
 
 %description -n vim-powerline
@@ -82,7 +85,7 @@ git clone https://github.com/powerline/powerline /tmp/%{name}-%{version}
 rsync -avhP /tmp//%{name}-%{version}/ %{buildroot}%
 
 #%autosetup -p1
-find -type f -exec sed -i '1s=^#!/usr/bin/\(python\|env python\)[23]\?=#!%{__python}=' {} +
+find -type f -exec sed -i '1s=^#!/usr/bin/\(python\|env python\)[23]\?=#!%{__python3}=' {} +
 
 %build
 # nothing to build
@@ -333,6 +336,13 @@ install -m 0644 powerline/dist/systemd/powerline-daemon.service %{buildroot}%{_u
 %{_datadir}/tmux/powerline*.conf
 
 %changelog
+* Fri Apr 24 2026 CasjaysDev <rpm-devel@casjaysdev.pro> - 2.8.4-1
+- Update to 2.8.4
+
+* Fri Apr 24 2026 CasjaysDev <rpm-devel@casjaysdev.pro> - 2.7-2
+- Fix unversioned python for EL10
+- Fix unversioned Obsoletes warning
+
 * Tue Mar 13 2018 Michael Goodwin <xenithorb@fedoraproject.org> - 2.6-7
 - Fix mislocated ipython bindings by not moving them (RHBZ #1554741)
   o There's no real justification to move ipython bindings when they're imported
