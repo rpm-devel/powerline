@@ -187,7 +187,7 @@ install -d -m 0755 %{buildroot}%{_unitdir}
 install -m 0644 powerline/dist/systemd/powerline-daemon.service %{buildroot}%{_unitdir}/powerline.service
 
 # cleanup
-%__rm -rf %{buildroot}%{python3_sitelib}/%{name}/config_files
+%{__rm} -rf %{buildroot}%{python3_sitelib}/%{name}/config_files
 
 %if 0%{?fedora}
 %fdupes %{buildroot}%{python3_sitelib}
@@ -336,6 +336,9 @@ install -m 0644 powerline/dist/systemd/powerline-daemon.service %{buildroot}%{_u
 %{_datadir}/tmux/powerline*.conf
 
 %changelog
+* Fri May 22 2026 CasjaysDev <rpm-devel@casjaysdev.pro> - 2.8.4-1
+- Fix deprecated %__rm macro to %{__rm}
+
 * Fri Apr 24 2026 CasjaysDev <rpm-devel@casjaysdev.pro> - 2.8.4-1
 - Update to 2.8.4
 
