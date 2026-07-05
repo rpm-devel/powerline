@@ -1,5 +1,4 @@
 %global debug_package %{nil}
-%global __python %{__python3}
 
 Name:           powerline
 Version:        2.8.4
@@ -7,19 +6,15 @@ Release:        1%{?dist}
 
 Summary:        The ultimate status-line/prompt utility
 License:        MIT
-Url:            https://github.com/powerline/powerline
-#BuildArch:      %BuildArch
+URL:            https://github.com/powerline/powerline
+ExclusiveArch:  x86_64 aarch64
 
 BuildRequires:  python%{python3_pkgversion}-setuptools
 BuildRequires:  python%{python3_pkgversion}-sphinx
 BuildRequires:  python%{python3_pkgversion}-devel
 BuildRequires:  fdupes
 BuildRequires:  fontconfig
-%if 0%{?rhel} >= 8 || 0%{?fedora}
 BuildRequires:  systemd-rpm-macros
-%else
-BuildRequires:  systemd
-%endif
 BuildRequires:  tmux
 BuildRequires:  vim-minimal
 
@@ -28,24 +23,12 @@ Requires:       powerline-fonts
 Requires:       which socat
 %{?systemd_requires}
 
-#Recommends:     python-pygit2
-
 Source0:        https://github.com/powerline/powerline/archive/%{version}/powerline-%{version}.tar.gz
-#Source1:        vim-powerline.metainfo.xml
-
-#Patch0:         powerline-py2v3-fix.patch
-#Patch1:         powerline-2.6-gcc7_fixes.patch
 
 %description
 Powerline is a status-line plugin for vim, and provides status-lines and prompts
 for several other applications, including zsh, bash, tmux, IPython, Awesome and
 Qtile.
-
-#%package docs
-#Summary: Powerline Documentation
-
-#%description docs
-#This package provides the powerline documentation.
 
 %package fonts
 Summary: Powerline Fonts
@@ -80,11 +63,7 @@ Add
 to your ~/.tmux.conf file.
 
 %prep
-rm -Rf %{buildroot}%/* && rm -Rf /tmp/%{name}-%{version}
-git clone https://github.com/powerline/powerline /tmp/%{name}-%{version}
-rsync -avhP /tmp//%{name}-%{version}/ %{buildroot}%
-
-#%autosetup -p1
+%autosetup -p1
 find -type f -exec sed -i '1s=^#!/usr/bin/\(python\|env python\)[23]\?=#!%{__python3}=' {} +
 
 %build
@@ -98,17 +77,6 @@ CFLAGS="%{optflags}" \
 
 # Check that the powerline client is an ELF executable
 ldd %{buildroot}%{_bindir}/powerline
-
-# build docs
-#pushd docs
-#%__make html SPHINXBUILD=/usr/bin/sphinx-build -a
-#%__rm _build/html/.buildinfo
-# A structure gets initialized while building the docs with os.environ.
-# This works around an rpmlint error with the build dir being in a file.
-#sed -i -e 's/abuild/user/g' _build/html/develop/extensions.html
-
-#%__make man SPHINXBUILD=/usr/bin/sphinx-build -a
-#popd
 
 # config
 install -d -m0755 %{buildroot}%{_sysconfdir}/xdg/%{name}
@@ -124,11 +92,6 @@ install -m0644 font/10-powerline-symbols.conf %{buildroot}%{_datadir}/fontconfig
 
 ln -s %{_datadir}/fontconfig/conf.avail/10-powerline-symbols.conf %{buildroot}%{_sysconfdir}/fonts/conf.d/10-powerline-symbols.conf
 
-# manpages
-#%__install -d -m0755 %{buildroot}%{_datadir}/man/man1
-#for f in powerline-config.1 powerline-daemon.1 powerline-lint.1 powerline.1; do
-#%__install -m0644 docs/_build/man/$f %{buildroot}%{_datadir}/man/man1/$f
-#done
 # No manual - build issues
 %{__rm} -Rf %{buildroot}%{_datadir}/man*
 
@@ -180,7 +143,6 @@ mv %{buildroot}%{python3_sitelib}/powerline/bindings/zsh/powerline.zsh %{buildro
 
 # vim-powerline appdata
 mkdir -p %{buildroot}%{_datadir}/appdata
-#install -m 644 %{SOURCE1} %{buildroot}%{_datadir}/appdata
 
 # systemd
 install -d -m 0755 %{buildroot}%{_unitdir}
@@ -189,9 +151,7 @@ install -m 0644 powerline/dist/systemd/powerline-daemon.service %{buildroot}%{_u
 # cleanup
 %{__rm} -rf %{buildroot}%{python3_sitelib}/%{name}/config_files
 
-%if 0%{?fedora}
 %fdupes %{buildroot}%{python3_sitelib}
-%endif
 
 %post
 %systemd_post powerline.service
@@ -283,10 +243,6 @@ install -m 0644 powerline/dist/systemd/powerline-daemon.service %{buildroot}%{_u
 %{_bindir}/powerline-daemon
 %{_bindir}/powerline-render
 %{_bindir}/powerline-lint
-#%{_mandir}/man1/powerline.1*
-#%{_mandir}/man1/powerline-config.1*
-#%{_mandir}/man1/powerline-daemon.1*
-#%{_mandir}/man1/powerline-lint.1*
 %dir %{_datadir}/%{name}
 %dir %{_datadir}/%{name}/awesome
 %{_datadir}/%{name}/awesome/powerline.lua
@@ -309,18 +265,17 @@ install -m 0644 powerline/dist/systemd/powerline-daemon.service %{buildroot}%{_u
 %{python3_sitelib}/*
 %{_unitdir}/powerline.service
 
-#%files docs
-#%doc docs/_build/html
-
 %files fonts
-%doc LICENSE README.rst
+%license LICENSE
+%doc README.rst
 %{_sysconfdir}/fonts/conf.d/10-powerline-symbols.conf
 %{_datadir}/fontconfig/conf.avail/10-powerline-symbols.conf
 %dir %{_datadir}/fonts/truetype
 %{_datadir}/fonts/truetype/PowerlineSymbols.otf
 
 %files -n vim-powerline
-%doc LICENSE README.rst
+%license LICENSE
+%doc README.rst
 %dir %{_datadir}/vim/vimfiles
 %dir %{_datadir}/vim/vimfiles/autoload
 %dir %{_datadir}/vim/vimfiles/autoload/powerline
@@ -328,14 +283,28 @@ install -m 0644 powerline/dist/systemd/powerline-daemon.service %{buildroot}%{_u
 %dir %{_datadir}/vim/vimfiles/plugin
 %{_datadir}/vim/vimfiles/plugin/powerline.vim
 %dir %{_datadir}/appdata
-#%{_datadir}/appdata/vim-powerline.metainfo.xml
 
 %files -n tmux-powerline
-%doc LICENSE README.rst
+%license LICENSE
+%doc README.rst
 %dir %{_datadir}/tmux
 %{_datadir}/tmux/powerline*.conf
 
 %changelog
+* Sat Jul 05 2026 CasjaysDev <rpm-devel@casjaysdev.pro> - 2.8.4-1
+- Remove deprecated %%global __python macro
+- Remove commented-out BuildArch, Recommends, Source1, Patch0/1 declarations
+- Remove commented-out %%package docs / %%description docs subpackage
+- Remove commented-out docs/manpages build blocks from %%install
+- Remove %%if fedora guard around %%fdupes (runs on EL now too)
+- Remove commented-out %%mandir entries and %%files docs section
+- Remove commented-out appdata install and appdata %%files entry
+
+* Thu Jul 03 2026 CasjaysDev <rpm-devel@casjaysdev.pro> - 2.8.4-1
+- Add ExclusiveArch: x86_64 aarch64; fix Url: -> URL:
+- Replace broken git-clone %%prep with %%autosetup -p1
+- %%license LICENSE in all subpackages; remove %%else systemd BuildRequires
+
 * Fri May 22 2026 CasjaysDev <rpm-devel@casjaysdev.pro> - 2.8.4-1
 - Fix deprecated %__rm macro to %{__rm}
 
