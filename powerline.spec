@@ -9,14 +9,22 @@ License:        MIT
 URL:            https://github.com/powerline/powerline
 ExclusiveArch:  x86_64 aarch64
 
+%if 0%{?suse_version}
+%global sphinx_pkg python3-Sphinx
+%global vim_pkg vim
+%else
+%global sphinx_pkg python%{python3_pkgversion}-sphinx
+%global vim_pkg vim-minimal
+%endif
+
 BuildRequires:  python%{python3_pkgversion}-setuptools
-BuildRequires:  python%{python3_pkgversion}-sphinx
+BuildRequires:  %{sphinx_pkg}
 BuildRequires:  python%{python3_pkgversion}-devel
 BuildRequires:  fdupes
 BuildRequires:  fontconfig
 BuildRequires:  systemd-rpm-macros
 BuildRequires:  tmux
-BuildRequires:  vim-minimal
+BuildRequires:  %{vim_pkg}
 
 Requires:       python3
 Requires:       powerline-fonts
@@ -292,6 +300,13 @@ install -m 0644 powerline/dist/systemd/powerline-daemon.service %{buildroot}%{_u
 
 %changelog
 * Sat Jul 05 2026 CasjaysDev <rpm-devel@casjaysdev.pro> - 2.8.4-1
+- Guard python3-sphinx BuildRequires: openSUSE/SLES uses python3-Sphinx
+  (capital S), RHEL/Fedora uses python%%{python3_pkgversion}-sphinx
+- Guard vim-minimal BuildRequires: openSUSE/SLES has no minimal/enhanced
+  split, only a unified vim package; RHEL/Fedora keep vim-minimal
+- Verified python3-devel, python3-setuptools, fdupes, socat, which, tmux,
+  fontconfig, systemd-rpm-macros are identically named on openSUSE/SLES;
+  left unguarded
 - Remove deprecated %%global __python macro
 - Remove commented-out BuildArch, Recommends, Source1, Patch0/1 declarations
 - Remove commented-out %%package docs / %%description docs subpackage
